@@ -1,5 +1,5 @@
 import { PostDetail } from "@/components/post-detail"
-import { getPosts } from "@/lib/data"
+import { getPosts, getPostBySlug } from "@/lib/data"
 import { notFound } from "next/navigation"
 
 interface PostPageProps {
@@ -20,8 +20,7 @@ export async function generateStaticParams() {
 
 export default async function PostPage({ params }: PostPageProps) {
   const resolvedParams = await params
-  const posts = await getPosts()
-  const post = posts.find((p) => p.slug === resolvedParams.slug)
+  const post = await getPostBySlug(resolvedParams.slug)
 
   if (!post) {
     notFound()

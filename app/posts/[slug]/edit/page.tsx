@@ -21,7 +21,7 @@ export default function EditPostPage({ params }: EditPostPageProps) {
   useEffect(() => {
     const loadParams = async () => {
       const resolvedParams = await params
-      const foundPost = getPostBySlug(resolvedParams.slug)
+      const foundPost = await getPostBySlug(resolvedParams.slug)
       setPost(foundPost || null)
       setParamsLoaded(true)
     }

@@ -1,8 +1,11 @@
-import { Post } from "./types"
+import { Post, Portfolio } from "./types"
+import { supabase } from "./supabaseClient"
 
 // 데이터 로직에서 환경변수 로깅
 console.log("Data Layer NEXT_PUBLIC_MANAGER_MODE:", process.env.NEXT_PUBLIC_MANAGER_MODE)
 
+// 더미 데이터 (주석 처리)
+/*
 export const posts: Post[] = [
   {
     id: "1",
@@ -45,11 +48,71 @@ export const posts: Post[] = [
     updatedAt: "2024-03-12"
   }
 ]
+*/
 
-export function getPosts(): Post[] {
-  return posts
+// Portfolio 데이터를 Post 형태로 변환하는 함수
+function portfolioToPost(portfolio: Portfolio): Post {
+  // 기본 이미지 URL (이미지가 없는 경우에만 사용)
+  const defaultImageUrl = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c'
+  
+  return {
+    id: portfolio.id,
+    slug: portfolio.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    title: portfolio.title,
+    description: portfolio.content.substring(0, 150) + '...', // 본문 앞 150자를 설명으로 사용
+    content: portfolio.content,
+    imageUrl: portfolio.thumbnail || defaultImageUrl, // 썸네일이 있으면 그대로 사용, 없으면 기본 이미지
+    createdAt: new Date(portfolio.created_at).toISOString().split('T')[0],
+    updatedAt: portfolio.updated_at ? new Date(portfolio.updated_at).toISOString().split('T')[0] : new Date(portfolio.created_at).toISOString().split('T')[0]
+  }
 }
 
-export function getPostBySlug(slug: string): Post | undefined {
-  return posts.find((post) => post.slug === slug)
+// Supabase에서 포트폴리오 데이터를 가져오는 함수
+export async function getPosts(): Promise<Post[]> {
+  try {
+    const { data: portfolios, error } = await supabase
+      .from('portfolio')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('포트폴리오 데이터를 가져오는 중 오류 발생:', error)
+      return []
+    }
+
+    if (!portfolios) {
+      return []
+    }
+
+    return portfolios.map(portfolioToPost)
+  } catch (error) {
+    console.error('포트폴리오 데이터를 가져오는 중 오류 발생:', error)
+    return []
+  }
+}
+
+// 특정 슬러그로 포스트를 가져오는 함수
+export async function getPostBySlug(slug: string): Promise<Post | undefined> {
+  try {
+    const { data: portfolios, error } = await supabase
+      .from('portfolio')
+      .select('*')
+      .eq('is_published', true)
+
+    if (error) {
+      console.error('포트폴리오 데이터를 가져오는 중 오류 발생:', error)
+      return undefined
+    }
+
+    if (!portfolios) {
+      return undefined
+    }
+
+    const posts = portfolios.map(portfolioToPost)
+    return posts.find((post) => post.slug === slug)
+  } catch (error) {
+    console.error('포트폴리오 데이터를 가져오는 중 오류 발생:', error)
+    return undefined
+  }
 } 

@@ -4,8 +4,8 @@ import { ClientAdminButton } from "@/components/client-admin-button"
 
 const isManagerMode = process.env.NEXT_PUBLIC_MANAGER_MODE === "true"
 
-export default function Home() {
-  const posts = getPosts()
+export default async function Home() {
+  const posts = await getPosts()
 
   return (
     <main className="container mx-auto px-4 py-8">

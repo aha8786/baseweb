@@ -54,29 +54,58 @@ export function PostForm({ post, mode }: PostFormProps) {
       return
     }
 
+    // 수정 모드에서 slug 검증
+    if (mode === "edit" && (!post || !post.slug)) {
+      alert("포스트 정보가 올바르지 않습니다.")
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const token = localStorage.getItem("admin-token")
-      const url = mode === "create" ? "/api/posts" : `/api/posts/${post?.slug}`
+      
+      // 토큰 검증
+      if (!token) {
+        alert("관리자 인증이 필요합니다. 다시 로그인해주세요.")
+        localStorage.removeItem("admin-token")
+        router.push("/")
+        return
+      }
+
+      const url = mode === "create" ? "/api/posts" : `/api/posts/${post!.slug}`
       const method = mode === "create" ? "POST" : "PUT"
+
+      console.log("요청 URL:", url) // 디버깅용
+      console.log("요청 방식:", method) // 디버깅용
 
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          "x-admin-token": token || "",
+          "x-admin-token": token,
         },
         body: JSON.stringify(formData),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to save post")
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
+        console.error("API 응답 오류:", errorData) // 디버깅용
+        
+        if (response.status === 401) {
+          alert("관리자 인증이 만료되었습니다. 다시 로그인해주세요.")
+          localStorage.removeItem("admin-token")
+          router.push("/")
+          return
+        }
+        
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
       const data = await response.json()
       router.push(`/posts/${data.slug}`)
     } catch (error) {
+      console.error("포스트 저장 오류:", error) // 디버깅용
       if (error instanceof Error) {
         alert(`포스트 저장에 실패했습니다. ${error.message}`)
       } else {
