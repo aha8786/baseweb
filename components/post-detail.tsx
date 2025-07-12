@@ -132,6 +132,25 @@ export function PostDetail({ post }: PostDetailProps) {
 
         {/* 콘텐츠 */}
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+        <div className="text-sm text-muted-foreground mb-2">
+          {post.updatedAt && post.updatedAt !== post.createdAt ? (
+            <span>
+              {new Date(post.updatedAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })} (최근 수정일)
+            </span>
+          ) : (
+            <span>
+              {new Date(post.createdAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
+          )}
+        </div>
         <p className="text-xl text-muted-foreground mb-8">
           {post.description}
         </p>

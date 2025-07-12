@@ -86,12 +86,9 @@ export default function PostCard({ post, isManagerMode }: PostCardProps) {
             {/* 오버레이 + 텍스트 컨테이너 */}
             <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100">
               <div className="translate-y-4 p-6 transition-transform duration-300 group-hover:translate-y-0">
-                <h3 className="mb-2 text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-white">
                   {post.title}
                 </h3>
-                <p className="text-sm text-gray-200">
-                  {post.description}
-                </p>
               </div>
             </div>
           </div>

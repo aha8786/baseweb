@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -8,7 +8,10 @@ import rehypeHighlight from "rehype-highlight"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { ContextMenu } from "@/components/ui/context-menu"
 import { cn } from "@/lib/utils"
+import { useSelection } from "@/lib/hooks/useSelection"
+import { useClipboardActions } from "@/lib/hooks/useClipboardActions"
 import {
   Bold,
   Italic,
@@ -31,6 +34,11 @@ interface MarkdownEditorProps {
   error?: string
   required?: boolean
   className?: string
+}
+
+interface ContextMenuPosition {
+  x: number
+  y: number
 }
 
 interface ToolbarButtonProps {
@@ -60,11 +68,92 @@ export function MarkdownEditor({
   className,
 }: MarkdownEditorProps) {
   const [activeTab, setActiveTab] = useState<string>("write")
+  const [showContextMenu, setShowContextMenu] = useState(false)
+  const [menuPosition, setMenuPosition] = useState<ContextMenuPosition>({ x: 0, y: 0 })
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // 도메인별 훅 사용
+  const { 
+    selectedText, 
+    selectionRange, 
+    saveSelection, 
+    restoreSelection, 
+    clearSelection 
+  } = useSelection({ textareaRef })
+
+  const { 
+    applyHeader,
+    applyTextStyle,
+    applyList,
+    applyLink,
+    applyImage,
+    applyCode,
+    applyBlockquote,
+    applyHorizontalRule,
+    applyTable,
+    applyTaskList,
+    applyTextColor,
+  } = useClipboardActions({
+    content: value,
+    selectionRange,
+    selectedText,
+    onChange,
+  })
+
+  // 메뉴가 열릴 때 선택 범위 복원
+  useEffect(() => {
+    if (showContextMenu && selectionRange && textareaRef.current) {
+      console.log('🔄 메뉴 열림 후 선택 범위 복원:', selectionRange)
+      const timer = setTimeout(() => {
+        restoreSelection()
+      }, 0)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [showContextMenu, selectionRange, restoreSelection])
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    console.group('\n🔍 컨텍스트 메뉴 이벤트 발생')
+    console.log('위치:', JSON.stringify({ x: e.clientX, y: e.clientY }, null, 2))
+    
+    // 기본 브라우저 컨텍스트 메뉴도 함께 표시되도록 preventDefault 제거
+
+    const textarea = textareaRef.current
+    if (!textarea) {
+      console.log('❌ textarea ref를 찾을 수 없음')
+      console.groupEnd()
+      return
+    }
+    console.log('✓ textarea ref 확인됨')
+
+    const selection = saveSelection()
+
+    if (selection) {
+      console.group('✅ 마크다운 메뉴 기능 실행됨')
+      console.log('📏 텍스트 길이:', selection.text.length)
+      console.log('🖱️ 마우스 위치:', JSON.stringify({ x: e.clientX, y: e.clientY }, null, 2))
+      console.groupEnd()
+
+      // 커스텀 컨텍스트 메뉴 위치를 기본 메뉴 옆에 배치 (오른쪽으로 200px 이동)
+      setMenuPosition({ 
+        x: e.clientX + 200, // 기본 메뉴 옆에 배치
+        y: e.clientY
+      })
+      setShowContextMenu(true)
+    } else {
+      console.log('ℹ️ 선택된 텍스트가 없어 기능이 실행되지 않음')
+      setShowContextMenu(false)
+      clearSelection()
+    }
+    console.groupEnd()
+  }
+
+  const handleMenuClose = () => {
+    setShowContextMenu(false)
+  }
 
   const insertText = (before: string, after: string = "") => {
-    const textarea = document.querySelector(
-      "textarea#markdown-content"
-    ) as HTMLTextAreaElement
+    const textarea = textareaRef.current
     if (!textarea) return
 
     const start = textarea.selectionStart
@@ -87,6 +176,62 @@ export function MarkdownEditor({
         end + before.length
       )
     }, 0)
+  }
+
+  // 마크다운 기능 핸들러들
+  const handleApplyHeader = (level: number) => {
+    restoreSelection()
+    applyHeader(level)
+  }
+
+  const handleApplyTextStyle = (style: 'bold' | 'italic' | 'strikethrough') => {
+    restoreSelection()
+    applyTextStyle(style)
+  }
+
+  const handleApplyList = (type: 'ordered' | 'unordered') => {
+    restoreSelection()
+    applyList(type)
+  }
+
+  const handleApplyLink = () => {
+    restoreSelection()
+    applyLink()
+  }
+
+  const handleApplyImage = () => {
+    restoreSelection()
+    applyImage()
+  }
+
+  const handleApplyCode = (type: 'inline' | 'block') => {
+    restoreSelection()
+    applyCode(type)
+  }
+
+  const handleApplyBlockquote = () => {
+    restoreSelection()
+    applyBlockquote()
+  }
+
+  const handleApplyHorizontalRule = () => {
+    restoreSelection()
+    applyHorizontalRule()
+  }
+
+  const handleApplyTable = () => {
+    restoreSelection()
+    applyTable()
+  }
+
+  const handleApplyTaskList = () => {
+    restoreSelection()
+    applyTaskList()
+  }
+
+  const handleApplyTextColor = (color: string) => {
+    restoreSelection()
+    applyTextColor(color)
   }
 
   const toolbarActions = [
@@ -172,9 +317,11 @@ export function MarkdownEditor({
             className="w-full"
           >
             <Textarea
+              ref={textareaRef}
               id="markdown-content"
               value={value}
               onChange={(e) => onChange(e.target.value)}
+              onContextMenu={handleContextMenu}
               required={required}
               placeholder="마크다운으로 내용을 작성하세요..."
               className="min-h-[400px] font-mono resize-none"
@@ -201,6 +348,23 @@ export function MarkdownEditor({
         </TabsContent>
       </Tabs>
       {error && <p className="text-sm text-red-500">{error}</p>}
+
+      <ContextMenu
+        isVisible={showContextMenu}
+        position={menuPosition}
+        onClose={handleMenuClose}
+        onApplyHeader={handleApplyHeader}
+        onApplyTextStyle={handleApplyTextStyle}
+        onApplyList={handleApplyList}
+        onApplyLink={handleApplyLink}
+        onApplyImage={handleApplyImage}
+        onApplyCode={handleApplyCode}
+        onApplyBlockquote={handleApplyBlockquote}
+        onApplyHorizontalRule={handleApplyHorizontalRule}
+        onApplyTable={handleApplyTable}
+        onApplyTaskList={handleApplyTaskList}
+        onApplyTextColor={handleApplyTextColor}
+      />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Menu } from "lucide-react"
+import { Menu, Linkedin, Globe, Github } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "./ui/button"
 import { useState } from "react"
@@ -15,17 +15,35 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold">DevPortfolio</span>
+              <span className="text-xl font-bold">개발흔적</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/portfolio" className="text-foreground/60 hover:text-foreground">
-              포트폴리오
+            <Link 
+              href="https://www.naver.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground/60 hover:text-foreground"
+            >
+              <Linkedin className="h-5 w-5" />
             </Link>
-            <Link href="/community" className="text-foreground/60 hover:text-foreground">
-              커뮤니티
+            <Link 
+              href="https://www.naver.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground/60 hover:text-foreground"
+            >
+              <Globe className="h-5 w-5" />
+            </Link>
+            <Link 
+              href="https://www.naver.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground/60 hover:text-foreground"
+            >
+              <Github className="h-5 w-5" />
             </Link>
             <ModeToggle />
           </div>
@@ -49,16 +67,31 @@ export function Navbar() {
           <div className="md:hidden">
             <div className="pt-2 pb-3 space-y-1">
               <Link
-                href="/portfolio"
-                className="block px-3 py-2 text-foreground/60 hover:text-foreground"
+                href="https://www.naver.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-3 py-2 text-foreground/60 hover:text-foreground flex items-center"
               >
-                포트폴리오
+                <Linkedin className="h-5 w-5 mr-2" />
+                LinkedIn
               </Link>
               <Link
-                href="/community"
-                className="block px-3 py-2 text-foreground/60 hover:text-foreground"
+                href="https://www.naver.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-3 py-2 text-foreground/60 hover:text-foreground flex items-center"
               >
-                커뮤니티
+                <Globe className="h-5 w-5 mr-2" />
+                Website
+              </Link>
+              <Link
+                href="https://www.naver.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-3 py-2 text-foreground/60 hover:text-foreground flex items-center"
+              >
+                <Github className="h-5 w-5 mr-2" />
+                GitHub
               </Link>
             </div>
           </div>
