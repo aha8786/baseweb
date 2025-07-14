@@ -118,21 +118,12 @@ export function PostDetail({ post }: PostDetailProps) {
             <ClientAdminButtons slug={post.slug} />
           </div>
         ) : null}
-        {/* 이미지 */}
-        <div className="relative aspect-[16/9] mb-8 rounded-lg overflow-hidden">
-          <Image
-            src={post.imageUrl}
-            alt={post.title}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover w-full h-full rounded-lg"
-          />
-        </div>
-
-        {/* 콘텐츠 */}
+        
+        {/* 제목 */}
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-        <div className="text-sm text-muted-foreground mb-2">
+        
+        {/* 날짜 */}
+        <div className="text-sm text-muted-foreground mb-4">
           {post.updatedAt && post.updatedAt !== post.createdAt ? (
             <span>
               {new Date(post.updatedAt).toLocaleDateString('ko-KR', {
@@ -151,9 +142,39 @@ export function PostDetail({ post }: PostDetailProps) {
             </span>
           )}
         </div>
-        <p className="text-xl text-muted-foreground mb-8">
+        
+        {/* 태그 */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {post.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        
+        {/* 대표 이미지 */}
+        <div className="relative aspect-[16/9] mb-8 rounded-lg overflow-hidden">
+          <Image
+            src={post.imageUrl}
+            alt={post.title}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover w-full h-full rounded-lg"
+          />
+        </div>
+
+        {/* 설명 */}
+        <p className="text-lg text-muted-foreground mb-8">
           {post.description}
         </p>
+        
+        {/* 내용 */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

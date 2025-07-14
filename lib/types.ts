@@ -5,6 +5,7 @@ export interface Post {
   description: string
   content: string
   imageUrl: string
+  tags: string[]
   createdAt: string
   updatedAt: string
 }
@@ -13,6 +14,8 @@ export interface Post {
 export interface Portfolio {
   id: string
   title: string
+  slug: string // slug 필드 추가
+  description: string // 설명 필드 추가
   content: string // 마크다운 본문
   author_id: string | null
   tags: string[]

@@ -44,7 +44,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { title, description, content, imageUrl } = body
+    const { title, description, content, imageUrl, tags } = body
 
     // 필수 필드 검증
     if (!title || !description || !content || !imageUrl) {
@@ -59,8 +59,10 @@ export async function PUT(
       .from('portfolio')
       .update({
         title,
-        content: content, // description은 content에서 자동 생성되므로 content만 저장
+        description: description, // 설명 필드 저장
+        content: content, // 마크다운 본문
         thumbnail: imageUrl,
+        tags: tags || [], // 전달받은 태그 사용
         // updated_at은 트리거로 자동 업데이트되므로 설정하지 않음
       })
       .eq('id', existingPost.id)
@@ -78,11 +80,12 @@ export async function PUT(
     // 업데이트된 포트폴리오 데이터를 Post 형태로 변환
     const updatedPost = {
       id: updatedPortfolio.id,
-      slug: updatedPortfolio.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      slug: updatedPortfolio.slug, // DB에서 저장된 slug 사용
       title: updatedPortfolio.title,
-      description: updatedPortfolio.content.substring(0, 150) + '...',
+      description: updatedPortfolio.description,
       content: updatedPortfolio.content,
       imageUrl: updatedPortfolio.thumbnail || imageUrl,
+      tags: updatedPortfolio.tags || [],
       createdAt: new Date(updatedPortfolio.created_at).toISOString().split('T')[0],
       updatedAt: new Date(updatedPortfolio.updated_at).toISOString().split('T')[0]
     }

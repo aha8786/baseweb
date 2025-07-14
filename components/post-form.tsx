@@ -23,7 +23,49 @@ export function PostForm({ post, mode }: PostFormProps) {
     description: post?.description || "",
     content: post?.content || "",
     imageUrl: post?.imageUrl || "",
+    tags: post?.tags || [],
   })
+
+  const [tagInput, setTagInput] = useState("")
+
+  const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      addTag()
+    }
+  }
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setTagInput(value)
+    
+    // # 으로 시작하고 공백이나 엔터를 누르면 태그 추가
+    if (value.endsWith(' ') || value.endsWith('\n')) {
+      addTag()
+    }
+  }
+
+  const addTag = () => {
+    const tag = tagInput.trim()
+    if (tag && !formData.tags.includes(tag)) {
+      // # 으로 시작하면 제거
+      const cleanTag = tag.startsWith('#') ? tag.substring(1) : tag
+      if (cleanTag) {
+        setFormData(prev => ({
+          ...prev,
+          tags: [...prev.tags, cleanTag]
+        }))
+      }
+    }
+    setTagInput("")
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }))
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -85,7 +127,10 @@ export function PostForm({ post, mode }: PostFormProps) {
           "Content-Type": "application/json",
           "x-admin-token": token,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          tags: formData.tags
+        }),
       })
 
       if (!response.ok) {
@@ -150,6 +195,45 @@ export function PostForm({ post, mode }: PostFormProps) {
         {errors.description && (
           <p className="text-sm text-red-500">{errors.description}</p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="tags" className="text-sm font-medium">
+          태그
+        </label>
+        <div className="space-y-2">
+          {/* 기존 태그 표시 */}
+          {formData.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {formData.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                >
+                  #{tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          {/* 태그 입력 필드 */}
+          <Input
+            id="tags"
+            placeholder="태그를 입력하세요 (# 으로 시작하거나 스페이스바로 구분)"
+            value={tagInput}
+            onChange={handleTagInputChange}
+            onKeyDown={handleTagInput}
+          />
+          <p className="text-xs text-muted-foreground">
+            #태그명 형태로 입력하거나 스페이스바를 눌러 태그를 추가하세요
+          </p>
+        </div>
       </div>
 
       <div className="space-y-2">

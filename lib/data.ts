@@ -57,11 +57,12 @@ function portfolioToPost(portfolio: Portfolio): Post {
   
   return {
     id: portfolio.id,
-    slug: portfolio.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+    slug: portfolio.slug, // DB에서 가져온 slug 사용
     title: portfolio.title,
-    description: portfolio.content.substring(0, 150) + '...', // 본문 앞 150자를 설명으로 사용
+    description: portfolio.description || portfolio.content, // description 필드가 있으면 사용, 없으면 content 사용
     content: portfolio.content,
     imageUrl: portfolio.thumbnail || defaultImageUrl, // 썸네일이 있으면 그대로 사용, 없으면 기본 이미지
+    tags: portfolio.tags,
     createdAt: new Date(portfolio.created_at).toISOString().split('T')[0],
     updatedAt: portfolio.updated_at ? new Date(portfolio.updated_at).toISOString().split('T')[0] : new Date(portfolio.created_at).toISOString().split('T')[0]
   }
@@ -95,22 +96,24 @@ export async function getPosts(): Promise<Post[]> {
 // 특정 슬러그로 포스트를 가져오는 함수
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   try {
-    const { data: portfolios, error } = await supabase
+    // DB에서 직접 slug로 조회
+    const { data: portfolio, error } = await supabase
       .from('portfolio')
       .select('*')
+      .eq('slug', slug)
       .eq('is_published', true)
+      .single()
 
     if (error) {
       console.error('포트폴리오 데이터를 가져오는 중 오류 발생:', error)
       return undefined
     }
 
-    if (!portfolios) {
+    if (!portfolio) {
       return undefined
     }
 
-    const posts = portfolios.map(portfolioToPost)
-    return posts.find((post) => post.slug === slug)
+    return portfolioToPost(portfolio)
   } catch (error) {
     console.error('포트폴리오 데이터를 가져오는 중 오류 발생:', error)
     return undefined
