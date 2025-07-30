@@ -29,13 +29,14 @@ async function validateRequest(request: Request) {
 
 export async function PUT(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const authError = await validateRequest(request)
     if (authError) return authError
 
-    const existingPost = await getPostBySlug(params.slug)
+    const resolvedParams = await params
+    const existingPost = await getPostBySlug(resolvedParams.slug)
     if (!existingPost) {
       return NextResponse.json(
         { error: "Post not found" },
@@ -107,13 +108,14 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const authError = await validateRequest(request)
     if (authError) return authError
 
-    const existingPost = await getPostBySlug(params.slug)
+    const resolvedParams = await params
+    const existingPost = await getPostBySlug(resolvedParams.slug)
     if (!existingPost) {
       return NextResponse.json(
         { error: "Post not found" },
