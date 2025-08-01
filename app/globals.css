@@ -367,3 +367,17 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* 마크다운 텍스트 색상 클래스 */
+.prose .text-red {
+  color: #ef4444;
+}
+
+.prose .text-blue {
+  color: #3b82f6;
+}
+
+/* 마크다운 내 HTML 스타일 지원 */
+.prose :where(span[style*="color"]) {
+  color: var(--color) !important;
+}

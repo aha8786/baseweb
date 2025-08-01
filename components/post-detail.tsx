@@ -11,6 +11,7 @@ import { motion } from "framer-motion"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
+import rehypeRaw from "rehype-raw"
 
 // highlight.js 스타일 동적 로드
 import "highlight.js/styles/github-dark.css"
@@ -182,7 +183,16 @@ export function PostDetail({ post }: PostDetailProps) {
         >
           <ReactMarkdown 
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
+            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+            components={{
+              // span 태그에 대한 특별 처리 추가
+              span: ({node, style, ...props}) => {
+                if (style?.color) {
+                  return <span style={{...style, '--color': style.color}} {...props} />
+                }
+                return <span style={style} {...props} />
+              }
+            }}
           >
             {post.content}
           </ReactMarkdown>
