@@ -188,7 +188,7 @@ export function PostDetail({ post }: PostDetailProps) {
               // span 태그에 대한 특별 처리 추가
               span: ({style, ...props}) => {
                 if (style?.color) {
-                  return <span style={{...style, '--color': style.color}} {...props} />
+                  return <span style={{color: style.color}} {...props} />
                 }
                 return <span style={style} {...props} />
               }
