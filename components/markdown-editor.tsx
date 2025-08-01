@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
+import rehypeRaw from "rehype-raw"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -339,7 +340,11 @@ export function MarkdownEditor({
             <div className="prose max-w-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
+                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                components={{
+                  // HTML 태그를 그대로 통과시킴
+                  span: ({...props}) => <span {...props} />
+                }}
               >
                 {value || "미리보기할 내용이 없습니다."}
               </ReactMarkdown>

@@ -186,7 +186,7 @@ export function PostDetail({ post }: PostDetailProps) {
             rehypePlugins={[rehypeRaw, rehypeHighlight]}
             components={{
               // span 태그에 대한 특별 처리 추가
-              span: ({node, style, ...props}) => {
+              span: ({style, ...props}) => {
                 if (style?.color) {
                   return <span style={{...style, '--color': style.color}} {...props} />
                 }
