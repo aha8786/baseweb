@@ -18,6 +18,10 @@ export async function generateStaticParams() {
   }))
 }
 
+// 동적 데이터를 위한 캐시 설정
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function PostPage({ params }: PostPageProps) {
   const resolvedParams = await params
   const post = await getPostBySlug(resolvedParams.slug)

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { verify } from "jsonwebtoken"
 // import { posts } from "@/lib/data" // 더미 데이터 주석 처리
 import { getPostBySlug } from "@/lib/data"
@@ -91,6 +92,10 @@ export async function PUT(
       updatedAt: new Date(updatedPortfolio.updated_at).toISOString().split('T')[0]
     }
 
+    // 관련 경로 재검증
+    revalidatePath(`/posts/${resolvedParams.slug}`)
+    revalidatePath('/')  // 메인 페이지도 재검증
+
     return NextResponse.json(updatedPost)
   } catch (error) {
     if (error instanceof Error) {
@@ -136,6 +141,10 @@ export async function DELETE(
         { status: 500 }
       )
     }
+
+    // 관련 경로 재검증
+    revalidatePath(`/posts/${resolvedParams.slug}`)
+    revalidatePath('/')  // 메인 페이지도 재검증
 
     return NextResponse.json({ success: true })
   } catch (error) {
